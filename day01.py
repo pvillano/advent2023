@@ -1,10 +1,10 @@
 from utils import benchmark, get_day, debug_print
 
-test = """1abc2
+test1 = """1abc2
 pqr3stu8vwx
 a1b2c3d4e5f
 treb7uchet"""
-test = """two1nine
+test2 = """two1nine
 eightwothree
 abcone2threexyz
 xtwone3four
@@ -20,60 +20,45 @@ def parse(raw: str):
 def part1(raw: str):
     lines = parse(raw)
     tot = 0
-    for l in lines:
+    for line in lines:
         j = []
-        for ch in l:
+        for ch in line:
             if '0' <= ch <= '9':
                 j.append(ch)
-        num = j[0] + j[-1]
+        num = int(j[0] + j[-1])
         debug_print(num)
-        tot += int(num)
+        tot += num
     return tot
 
-DIGITS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+
+DIGIT_WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+DIGIT_DIGITS = [str(i) for i in range(10)]
+
+
 def part2(raw: str):
     lines = parse(raw)
     tot = 0
-    for l in lines:
-        best_start = len(l)
-        best_end = len(l)
-        start_value = 0
-        end_value = 0
-        for d, digit in enumerate(DIGITS):
-            try:
-                if l.index(digit) <= best_start:
-                    best_start = l.index(digit)
-                    start_value = d
-            except ValueError as e:
-                pass
-            try:
-                if "".join(reversed(l)).index("".join(reversed(digit))) <= best_end:
-                    best_end = "".join(reversed(l)).index("".join(reversed(digit)))
-                    end_value = d
-            except ValueError as e:
-                pass
-        for d, digit in enumerate(str(i) for i in range(10)):
-            try:
-                if l.index(digit) <= best_start:
-                    best_start = l.index(digit)
-                    start_value = d
-            except ValueError as e:
-                pass
-            try:
-                if "".join(reversed(l)).index("".join(reversed(digit))) <= best_end:
-                    best_end = "".join(reversed(l)).index("".join(reversed(digit)))
-                    end_value = d
-            except ValueError as e:
-                pass
-        debug_print(start_value*10+end_value)
-        tot += start_value*10+end_value
+    for line in lines:
+        first_digit_idx = len(line)
+        last_digit_idx = len(line)
+        for digit_list in [DIGIT_WORDS, DIGIT_DIGITS]:
+            for digit_int, digit in zip(range(10), digit_list):
+                if digit in line and line.index(digit) <= first_digit_idx:
+                    first_digit_idx = line.index(digit)
+                    first_digit = digit_int
+                enil = "".join(reversed(line))
+                tigid = "".join(reversed(digit))
+                if tigid in enil and enil.index(tigid) <= last_digit_idx:
+                    last_digit_idx = enil.index(tigid)
+                    last_digit_value = digit_int
+        tot += first_digit * 10 + last_digit_value
     return tot
 
 
-
 def main():
-    raw = get_day(1, test)
-    # benchmark(part1, raw)
+    raw = get_day(1, test1)
+    benchmark(part1, raw)
+    raw = get_day(1, test2)
     benchmark(part2, raw)
 
 
