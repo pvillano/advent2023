@@ -41,7 +41,7 @@ BASE_INDENT = len(inspect.stack()) + 1
 
 def debug_print_recursive(*args, override=False, **kwargs) -> None:
     """
-
+    Prints with an indent proportional to the current call stack depth
     :param args:
     :param override:
     :param kwargs:
@@ -57,7 +57,7 @@ def debug_print_sparse_grid(
         grid_map: dict[(int, int), Any] or set, *, transpose=False, override=False
 ) -> None:
     """
-
+    Prints a sparse grid
     :param grid_map:
     :param transpose:
     :param override:
