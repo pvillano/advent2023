@@ -30,7 +30,18 @@ def otqdm(
     bars_is_time=False,
     len_iterator=None,
 ):
-
+    """
+    Operates similarly to tqdm, but also gives an estimate of the fuction's algorithmic complexity
+    :param iterator:
+    :param min_interval:
+    :param min_iters:
+    :param unit:
+    :param n_bars:
+    :param percent_is_time:
+    :param bars_is_time:
+    :param len_iterator:
+    :return:
+    """
     last_print_t = start_time = time.perf_counter_ns()
     last_print_n = 0
     n = 0
