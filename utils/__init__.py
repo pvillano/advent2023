@@ -2,7 +2,7 @@
 from .parsing import *
 from .printing import *
 from .std import *
-
+from .submit import *
 __all__ = [
     "benchmark",
     "DEBUG",

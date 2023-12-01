@@ -2,8 +2,7 @@ __all__ = [
     "benchmark",
     "DEBUG",
     "flatten",
-    "pipe",
-    "submit"
+    "pipe"
 ]
 
 import os
@@ -54,38 +53,18 @@ def test(part: Callable, data, expected=None):
     assert ans == expected
 
 
-def benchmark(part: Callable) -> None:
+def benchmark(func: Callable, *args, **kwargs) -> None:
     """
     Calls a function and prints the return value
-    :param part:
+    :param func:
     :return: None
     """
-    file = sys.stderr if DEBUG else sys.stdout
-
-    datetime.datetime.now().strftime("%A, %d. %B %Y %I:%M%p")
-    print("Started", datetime.datetime.now().strftime("%I:%M%p"), file=file, flush=True)
+    out_stream = sys.stderr if DEBUG else sys.stdout
+    print("Started", datetime.datetime.now().strftime("%I:%M%p"), file=out_stream, flush=True)
     start_time = time.perf_counter_ns()
-    ans = part()
+    ans = func(*args, **kwargs)
     end_time = time.perf_counter_ns()
     seconds = (end_time - start_time) / 10 ** 9
-    pprint(ans, stream=file)
-    print(f"Completed in {seconds:0.3f} seconds.\n", file=file, flush=True)
+    pprint(ans, stream=out_stream)
+    print(f"Completed in {seconds:0.3f} seconds.\n", file=out_stream, flush=True)
     return ans
-
-
-def submit(answer, day, level, year):
-    url = f"https://adventofcode.com/{year}/day/{day}/answer"
-    data = {"level": level, "answer": answer}
-    with open(".token", "r") as token_file:
-        cookies = {"session": token_file.read()}
-    response = requests.post(url=url, data=data, cookies=cookies)
-    print(response.text, file=sys.stderr)
-    if "That's the right answer!" in response.text:
-        print("That's the right answer!")
-    elif "That's not the right answer." in response.text:
-        print("That's not the right answer.", file=sys.stderr)
-        raise ...
-    elif "You don't seem to be solving the right level." in response.text:
-        raise ...
-    else:
-        raise NotImplementedError()

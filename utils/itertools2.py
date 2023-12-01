@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import Iterable, Sized
+from typing import Iterable
 
 
 def rotations(iterable: Iterable):

@@ -10,7 +10,7 @@ from .std import DEBUG
 __all__ = ["get_day", "extract_ints"]
 
 
-def get_day(day: int, practice: str = "", *, year: int = 2022, override=False) -> str:
+def get_day(day: int, practice: str = "", *, year: int = 2023, override=False) -> str:
     if DEBUG and not override:
         return practice.rstrip("\n")
 
