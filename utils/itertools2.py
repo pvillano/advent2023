@@ -1,3 +1,5 @@
+__all__ = ["rotations", "transpose"]
+
 from itertools import chain
 from typing import Iterable
 

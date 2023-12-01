@@ -1,3 +1,5 @@
+__all__ = ["get_day", "extract_ints"]
+
 import os
 import re
 from functools import cache
@@ -6,8 +8,6 @@ from typing import Iterable
 import requests
 
 from .std import DEBUG
-
-__all__ = ["get_day", "extract_ints"]
 
 
 def get_day(day: int, practice: str = "", *, year: int = 2023, override=False) -> str:

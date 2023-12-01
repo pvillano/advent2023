@@ -1,10 +1,10 @@
+__all__ = ["debug_print", "debug_print_grid", "debug_print_sparse_grid", "debug_print_recursive"]
+
 import inspect
 import sys
 from typing import Any
 
 from .std import DEBUG
-
-__all__ = ["debug_print", "debug_print_grid", "debug_print_sparse_grid", "debug_print_recursive"]
 
 
 def debug_print(*args, override=False, **kwargs) -> None:

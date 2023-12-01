@@ -5,15 +5,12 @@ __all__ = [
     "pipe"
 ]
 
-import os
 import sys
 import time
 import datetime
 from itertools import chain
 from pprint import pprint as not_my_pp
-from typing import Callable
-
-import requests as requests
+from typing import Callable, Any
 
 DEBUG = bool(sys.gettrace())
 
@@ -42,18 +39,13 @@ def test(part: Callable, data, expected=None):
     ans = part(data)
     end_time = time.perf_counter_ns()
     seconds = (end_time - start_time) / 10 ** 9
-    if DEBUG:
-        pprint(ans, stream=sys.stderr)
-        print(
-            f"completed in {seconds:0.3f} seconds\n", file=sys.stderr, flush=True
-        )
-    else:
-        pprint(ans)
-        print(f"completed in {seconds:0.3f} seconds\n")
+    out_stream = sys.stderr if DEBUG else sys.stdout
+    pprint(ans, stream=sys.stderr)
+    print(f"completed in {seconds:0.3f} seconds\n", file=out_stream, flush=True)
     assert ans == expected
 
 
-def benchmark(func: Callable, *args, **kwargs) -> None:
+def benchmark(func: Callable, *args, **kwargs) -> Any:
     """
     Calls a function and prints the return value
     :param func:
