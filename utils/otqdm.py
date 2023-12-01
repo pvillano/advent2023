@@ -1,5 +1,5 @@
 from math import log, exp
-from time import time, sleep
+import time
 from typing import Sized, Iterable
 
 __all__ = ["otqdm"]
@@ -7,10 +7,11 @@ __all__ = ["otqdm"]
 UTF = " " + "".join(map(chr, range(0x258F, 0x2587, -1)))
 
 
-def format_interval(t):
+def format_interval(ns):
     """[H:]MM:SS"""
-    if t is None:
+    if ns is None:
         return "??:??"
+    t = ns / 10 ** 9
     mins, s = divmod(int(t), 60)
     h, m = divmod(mins, 60)
     if h:
@@ -30,7 +31,7 @@ def otqdm(
     len_iterator=None,
 ):
 
-    last_print_t = start_time = time()
+    last_print_t = start_time = time.perf_counter_ns()
     last_print_n = 0
     n = 0
     last_len = 0
@@ -45,12 +46,12 @@ def otqdm(
     for obj in iterator:
         yield obj
         n += 1
-        delta_t = time() - last_print_t
+        delta_t = time.perf_counter_ns() - last_print_t
         normal_print = (n - last_print_n >= min_iters) and delta_t >= min_interval
         override_print = n == len_iterator or n == 1
         if not (normal_print or override_print):
             continue
-        now = time()
+        now = time.perf_counter_ns()
         elapsed = now - start_time
         elapsed_str = format_interval(elapsed)
         rate = n / elapsed if elapsed > 0 else 0
@@ -119,7 +120,7 @@ if __name__ == "__main__":
 
     print(">>>for i in otdqm(range(40)):\n" "...    sleep(i/100)")
     for i in otqdm(range(40)):
-        sleep(i / 100)
+        time.sleep(i / 100)
 
     print(">>>for i in otdqm(range(40)):\n" "...    fibonacci(i)")
     for i in otqdm(range(40)):
