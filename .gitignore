@@ -1,4 +1,4 @@
+*.pyc
 input*.txt
 /.idea/
-/__pycache__/
 .token
