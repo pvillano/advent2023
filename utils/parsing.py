@@ -31,7 +31,7 @@ def get_day(day: int, practice: str = "", *, year: int = 2023, override=False) -
 
 @cache
 def __int_extractor_regex():
-    return re.compile("([0-9]+)")
+    return re.compile("(-?[0-9]+)")
 
 
 def extract_ints(line: str) -> Iterable[int]:
