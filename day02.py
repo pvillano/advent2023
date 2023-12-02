@@ -1,4 +1,7 @@
+import re
 from collections import defaultdict
+from functools import reduce
+from itertools import batched
 
 from utils import benchmark, get_day
 
@@ -14,9 +17,9 @@ def parse(raw: str):
     for line in lines:
         id_str, games_str = line.split(": ")
         game_id = int(id_str.split(" ")[-1])
-        games = games_str.split("; ")
+        game_str_list = games_str.split("; ")
         game_list = []
-        for game in games:
+        for game in game_str_list:
             game_dict = dict()
             for s in game.split(", "):
                 val, color = s.split(" ")
@@ -31,18 +34,15 @@ def part1(raw: str):
     lines = parse(raw)
     added_ids = 0
     for game_id, game_list in lines:
-        possible = True
+        fail = False
         for game in game_list:
-            if "red" in game and game["red"] > 12:
-                possible = False
-            if "green" in game and game["green"] > 13:
-                possible = False
-            if "blue" in game and game["blue"] > 14:
-                possible = False
-        if possible:
+            if (game.get("red", 0) > 12
+                    or game.get("green", 0) > 13
+                    or game.get("blue", 0) > 14):
+                fail = True
+        if not fail:
             added_ids += game_id
     return added_ids
-
 
 
 def part2(raw: str):
@@ -57,11 +57,28 @@ def part2(raw: str):
         power += gamegame["red"] * gamegame["green"] * gamegame["blue"]
     return power
 
+import operator as op
+def golf(raw: str):
+    print(sum(
+        g for g, l in enumerate(raw.split("\n"), 1)
+        if all(
+            int(n) <= {"r": 12, "g": 13, "b": 14}[c[0]]
+            for n, c in batched(re.split("[;,:]? ", l)[2:], 2))))
+
+    power = 0
+    for g, l in enumerate(raw.split("\n"), 1):
+        d = {"r": 0, "g": 0, "b": 0}
+        for n, c in batched(re.split("[;,:]? ", l)[2:], 2):
+            d[c[0]] = max(d[c[0]], int(n))
+        power += reduce(op.mul, d.values())
+    return power
+
 
 def main():
     raw = get_day(2, test)
     benchmark(part1, raw)
     benchmark(part2, raw)
+    benchmark(golf, raw)
 
 
 if __name__ == "__main__":
