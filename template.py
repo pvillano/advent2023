@@ -31,7 +31,7 @@ test = """"""
 
 
 def parse(raw: str):
-    return raw.split("\n")
+    return raw.splitlines()
 
 
 def part1(raw: str):
