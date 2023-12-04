@@ -11,41 +11,34 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11
 
 def parse(raw: str):
     lines = raw.splitlines()
-
-    def it():
-        for line in lines:
-            card, rest = line.split(":")
-            left, right = rest.split("|")
-            card = extract_ints(card)[0]
-            left = extract_ints(left)
-            right = extract_ints(right)
-            yield card, left, right
-
-    return list(it())
+    ret = []
+    for line in lines:
+        _, rest = line.split(":")
+        winning, mine = rest.split("|")
+        winning = extract_ints(winning)
+        mine = extract_ints(mine)
+        ret.append((winning, mine))
+    return ret
 
 
 def part1(raw: str):
     lines = parse(raw)
-
-    def it():
-        for card, winning, mine in lines:
-            count = len(set(winning) & set(mine))
-            points = 2 ** (count - 1) if count > 0 else 0
-            yield points
-
-    return sum(it())
+    points = 0
+    for winning, mine in lines:
+        count = len(set(winning) & set(mine))
+        points += 2 ** count // 2
+    return points
 
 
 def part2(raw: str):
     lines = parse(raw)
-    lines = [[1, x[1], x[2]] for x in lines]
-    for i in range(len(lines)):
-        count, winning, mine = lines[i]
-        following = len(set(winning) & set(mine))
-        if following:
-            for j in range(1, following + 1):
-                lines[i + j][0] += count
-    return sum(x[0] for x in lines)
+    counts = [1] * len(lines)
+    for i, (winning, mine) in enumerate(lines):
+        wins = len(set(winning) & set(mine))
+        if wins:
+            for j in range(i + 1, i + wins + 1):
+                counts[j] += counts[i]
+    return sum(counts)
 
 
 def main():
