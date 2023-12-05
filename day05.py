@@ -42,60 +42,63 @@ def parse(raw: str):
     sections = raw.split("\n\n")
     seeds = extract_ints(sections[0])
     ret = []
-    for section in sections[1:]:
-        ass = []
-        title, rest = section.split(" map:\n")
+    for stage in sections[1:]:
+        stage_mappings = []
+        title, rest = stage.split(" map:\n")
         for line in rest.splitlines():
             dest, src, leng = extract_ints(line)
-            ass.append((range(src, src + leng), range(dest, dest + leng)))
-        ret.append(ass)
+            stage_mappings.append((range(src, src + leng), range(dest, dest + leng)))
+        ret.append(stage_mappings)
     return seeds, ret
 
 
 def part1(raw: str):
-    seeds, mapmap = parse(raw)
-    endlocs = []
-    for seed in seeds:
-        for mm in mapmap:
-            for srcrange, destrange in mm:
-                if seed in srcrange:
-                    seed = seed + destrange[0] - srcrange[0]
+    seed_list, stage_list = parse(raw)
+    end_zones = []
+    for seed in seed_list:
+        for mapping_list in stage_list:
+            for src_range, dest_range in mapping_list:
+                if seed in src_range:
+                    seed = seed + dest_range[0] - src_range[0]
                     break
-        endlocs.append(seed)
-    return min(endlocs)
+        end_zones.append(seed)
+    return min(end_zones)
 
 
 def part2(raw: str):
-    seeds, mapmap = parse(raw)
-    seeds = list(zip(seeds[::2], seeds[1::2]))
-    seeds = (range(x, x + y) for x, y in seeds)
-    seedlist = list(seeds)
-    for stage in mapmap:
-        newseedlist = []
-        partinglines = sorted(set(
-            chain([x.start for x, _ in stage], [x.stop for x, _ in stage], [x.start for x in seedlist], [x.stop for x in seedlist])))
-        for start, stop in zip(partinglines, partinglines[1:]):
-            for seed in seedlist:
-                if start in seed and stop-1 in seed:
-                    newseedlist.append(range(start, stop))
-                    break
-        # should be in order with no repeats
-        seedlist = newseedlist
-        newseedlist = []
+    seed_list, stage_list = parse(raw)
+    seed_list = list(zip(seed_list[::2], seed_list[1::2]))
+    seed_list = (range(x, x + y) for x, y in seed_list)
+    seed_list = list(seed_list)
+    for stage in stage_list:
+        # in order with no repeats
+        parting_lines = sorted(set(
+            chain(chain.from_iterable((src_range.start, src_range.stop) for src_range, _ in stage),
+                  chain.from_iterable((seed.start, seed.stop) for seed in seed_list))))
 
-        for seed in seedlist:
+        # also in order with no repeats
+        new_seed_list = []
+        for start, stop in zip(parting_lines, parting_lines[1:]):
+            for seed in seed_list:
+                if start in seed and stop - 1 in seed:
+                    new_seed_list.append(range(start, stop))
+                    break
+        seed_list = new_seed_list
+
+        new_seed_list = []
+        for seed in seed_list:
             used_seed = False
-            for srcrange, destrange in stage:
-                if seed.start in srcrange and seed.stop - 1 in srcrange:
-                    newseedlist.append(range(seed.start + destrange.start - srcrange.start,
-                                                 seed.stop + destrange.start - srcrange.start))
+            for src_range, dest_range in stage:
+                if seed.start in src_range and seed.stop - 1 in src_range:
+                    new_seed_list.append(range(seed.start + dest_range.start - src_range.start,
+                                               seed.stop + dest_range.start - src_range.start))
                     used_seed = True
                     break
             if not used_seed:
-                newseedlist.append(seed)
-        seedlist = sorted(set(newseedlist), key= lambda x: x.start)
-        # print(seedlist)
-    return min([x.start for x in seedlist])
+                new_seed_list.append(seed)
+        seed_list = new_seed_list
+
+    return min([x.start for x in seed_list])
 
 
 def main():
