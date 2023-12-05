@@ -52,7 +52,8 @@ def benchmark(func: Callable, *args, **kwargs) -> Any:
     :return: None
     """
     out_stream = sys.stderr if DEBUG else sys.stdout
-    print("Started", datetime.datetime.now().strftime("%I:%M%p"), file=out_stream, flush=True)
+    name = func.__name__ if hasattr(func, "__name__") else "benchmark"
+    print("Started", name, datetime.datetime.now().strftime("%I:%M%p"), file=out_stream, flush=True)
     start_time = time.perf_counter_ns()
     ans = func(*args, **kwargs)
     end_time = time.perf_counter_ns()
