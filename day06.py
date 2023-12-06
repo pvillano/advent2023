@@ -24,15 +24,13 @@ def part1(raw: str):
 
 
 def part2(raw: str):
-    time, distance = [int(l.split(":")[1].replace(" ", "")) for l in raw.splitlines()]
+    time, distance = [int(line.split(":")[1].replace(" ", "")) for line in raw.splitlines()]
     lower, upper = 0, time // 2
 
     def traveled(t):
         return t * (time - t)
 
-    assert traveled(upper) > distance
-    assert traveled(lower) < distance
-    while upper - lower > 1:
+    while True:
         middle = (lower + upper) // 2
         if traveled(middle) > distance and traveled(middle - 1) < distance:
             return time - middle - middle + 1
@@ -40,13 +38,24 @@ def part2(raw: str):
             upper = middle
         elif traveled(middle) < distance:
             lower = middle
-    pass
+
+
+def part2slow(raw: str):
+    time, distance = [int(line.split(":")[1].replace(" ", "")) for line in raw.splitlines()]
+
+    def traveled(t):
+        return t * (time - t)
+
+    for middle in range(time // 2):
+        if traveled(middle) > distance and traveled(middle - 1) < distance:
+            return (time - middle) - middle + 1
 
 
 def main():
     raw = get_day(6, test)
     benchmark(part1, raw)
     benchmark(part2, raw)
+    benchmark(part2slow, raw)
 
 
 if __name__ == "__main__":
