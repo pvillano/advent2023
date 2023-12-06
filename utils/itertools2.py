@@ -11,6 +11,7 @@ def rotations(iterable: Iterable):
 
 
 def transpose(iterable):
+    iterable = list(iterable)
     assert len(set(map(len, iterable))) == 1
     return zip(*iterable)
 
