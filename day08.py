@@ -1,9 +1,16 @@
+import re
 from itertools import cycle
 from math import lcm
 
-from utils import benchmark, get_day, debug_print
+from utils import benchmark, get_day
 
-test = """LR
+test1 = """LLR
+
+AAA = (BBB, BBB)
+BBB = (AAA, ZZZ)
+ZZZ = (ZZZ, ZZZ)"""
+
+test2 = """LR
 
 11A = (11B, XXX)
 11B = (XXX, 11Z)
@@ -14,76 +21,47 @@ test = """LR
 22Z = (22B, 22B)
 XXX = (XXX, XXX)"""
 
+
 def parse(raw: str):
-    path, rest = raw.split('\n\n')
-    onetwo = {"L": 0, "R": 1}
-    path = tuple(onetwo[p] for p in path)
-    nodes = dict()
-    for line in rest.splitlines():
-        head, tails = line.split(" = ")
-        left, right = tails[1:-1].split(", ")
-        nodes[head] = (left, right)
-    return path, nodes
+    path_str, nodes_str = raw.split('\n\n')
+    path_str = tuple({"L": 0, "R": 1}[p] for p in path_str)
+    nodes = {k: (l, r) for k, l, r in map(re.compile("\\w{3}").findall, nodes_str.splitlines())}
+    return path_str, nodes
 
 
-# def part1(raw: str):
-#     path, nodes = parse(raw)
-#     current = "AAA"
-#     for i, dir in enumerate(cycle(path)):
-#         if dir == "L":
-#             current = nodes[current][0]
-#         elif dir == "R":
-#             current = nodes[current][1]
-#         else:
-#             assert False
-#         if current == "ZZZ":
-#             return i+1
+def part1(raw: str):
+    path, nodes = parse(raw)
+    current = "AAA"
+    for i, direction in enumerate(cycle(path), 1):
+        current = nodes[current][direction]
+        if current == "ZZZ":
+            return i
 
 
 def part2(raw: str):
     path, nodes = parse(raw)
-    a_set = set(x for x in nodes.keys() if x.endswith("A"))
+    a_set = (x for x in nodes.keys() if x.endswith("A"))
 
     def characterize(node):
         seen = dict()
         current = node
-        for i, (loop_step, dir) in enumerate(cycle(enumerate(path))):
+        for i, (loop_step, direction) in enumerate(cycle(enumerate(path))):
             key = (current, loop_step)
             if key in seen:
                 start_of_loop = seen[key]
                 length_of_loop = i - start_of_loop
-                # print(f"{node} has a cycle of length {length_of_loop} starting at {key}")
-
-                break
+                return length_of_loop
             seen[key] = i
-            current = nodes[current][dir]
-
-
-        modulus = length_of_loop
-        remainders = []
-        first = key
-        current = first
-        while True:
-            if current[0].endswith('Z'):
-                remainders.append(seen[current] % modulus)
-            current = nodes[current[0]][path[current[1]]], (current[1] + 1) % len(path)
-            if current == first:
-                break
-        print(f"{node} has Zs at t%{length_of_loop}=={remainders[0]}")
-        assert length_of_loop % len(path) == 0
-        return modulus, remainders
+            current = nodes[current][direction]
 
     characterized = list(map(characterize, a_set))
-    period = lcm(*(x[0] for x in characterized))
-    # print(f"The combined period of all cycles is {period}")
-    return period
+    return lcm(*(x for x in characterized))
 
 
 def main():
-    raw = test
-    # benchmark(part1, raw)
-    benchmark(part2, raw)
-    raw = get_day(8, test)
+    raw = get_day(8, test1)
+    benchmark(part1, raw)
+    raw = get_day(8, test2)
     benchmark(part2, raw)
 
 
