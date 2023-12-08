@@ -12,7 +12,9 @@ from itertools import chain
 from pprint import pprint as not_my_pp
 from typing import Callable, Any
 
-DEBUG = bool(sys.gettrace())
+has_trace = hasattr(sys, 'gettrace') and sys.gettrace() is not None
+has_breakpoint = sys.breakpointhook.__module__ != "sys"
+DEBUG = has_trace or has_breakpoint
 
 flatten = chain.from_iterable
 
