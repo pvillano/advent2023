@@ -12,5 +12,6 @@ __all__ = [
     "flatten",
     "get_day",
     "pipe",
-    "submit"
+    "submit",
+    "test",
 ]

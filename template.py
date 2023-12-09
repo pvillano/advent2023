@@ -25,9 +25,14 @@ with open("template.py") as template_file:
 exit(0)
 DAYNUMBER = 0
 ################################################################################
-from utils import benchmark, get_day
+from utils import benchmark, get_day, test
 
-test = """"""
+test1 = """"""
+
+expected1 = None
+
+test2 = test1
+expected2 = None
 
 
 def parse(raw: str):
@@ -43,8 +48,10 @@ def part2(raw: str):
 
 
 def main():
-    raw = get_day(DAYNUMBER, test)
+    test(part1, test1, expected1)
+    raw = get_day(DAYNUMBER, override=True)
     benchmark(part1, raw)
+    test(part2, test2, expected2)
     benchmark(part2, raw)
 
 

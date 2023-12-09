@@ -2,7 +2,8 @@ __all__ = [
     "benchmark",
     "DEBUG",
     "flatten",
-    "pipe"
+    "pipe",
+    "test"
 ]
 
 import sys
@@ -36,15 +37,17 @@ def pprint(object_, stream=None, indent=1, width=80, depth=None, *,
                   underscore_numbers=underscore_numbers)
 
 
-def test(part: Callable, data, expected=None):
+def test(func: Callable, data, expected):
+    name = func.__name__ if hasattr(func, "__name__") else "benchmark"
+    out_stream = sys.stderr if DEBUG else sys.stdout
+    print("Testing", name, datetime.datetime.now().strftime("%I:%M%p"), "Expected:", expected, file=out_stream, flush=True)
     start_time = time.perf_counter_ns()
-    ans = part(data)
+    ans = func(data)
     end_time = time.perf_counter_ns()
     seconds = (end_time - start_time) / 10 ** 9
-    out_stream = sys.stderr if DEBUG else sys.stdout
-    pprint(ans, stream=sys.stderr)
-    print(f"completed in {seconds:0.3f} seconds\n", file=out_stream, flush=True)
     assert ans == expected
+    print(f"Passed in {seconds:0.3f} seconds\n", file=out_stream, flush=True)
+
 
 
 def benchmark(func: Callable, *args, **kwargs) -> Any:
