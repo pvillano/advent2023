@@ -40,13 +40,17 @@ def pprint(object_, stream=None, indent=1, width=80, depth=None, *,
 def test(func: Callable, data, expected):
     name = func.__name__ if hasattr(func, "__name__") else "benchmark"
     out_stream = sys.stderr if DEBUG else sys.stdout
-    print("Testing", name, datetime.datetime.now().strftime("%I:%M%p"), "Expected:", expected, file=out_stream, flush=True)
+    print("Testing", name, datetime.datetime.now().strftime("%I:%M%p"), file=out_stream, flush=DEBUG)
     start_time = time.perf_counter_ns()
     ans = func(data)
     end_time = time.perf_counter_ns()
     seconds = (end_time - start_time) / 10 ** 9
-    assert ans == expected
-    print(f"Passed in {seconds:0.3f} seconds\n", file=out_stream, flush=True)
+    if not ans == expected:
+        print(f"FAILED in {seconds:0.3f} seconds", file=out_stream, flush=DEBUG)
+        print("Expected:", expected, file=out_stream, flush=True)
+        print("Actual:", ans, file=out_stream, flush=True)
+        exit(1)
+    print(f"Passed in {seconds:0.3f} seconds\n", file=out_stream, flush=DEBUG)
 
 
 
