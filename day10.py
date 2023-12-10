@@ -104,19 +104,20 @@ def part2(raw: str):
         ch1, ch2 = lines[rr][cc], lines[rrr][ccc]
         return "s" in adjacency[ch1] and "n" in adjacency[ch2]
 
-    for ra, line in enumerate(lines):
-        for ca, char in enumerate(line):
+    for find_s_r, line in enumerate(lines):
+        for find_s_c, char in enumerate(line):
             if char == "S":
-                r, c = ra, ca
+                origin_r, origin_c = find_s_r, find_s_c
                 break
-    origin = r, c
+    origin = origin_r, origin_c
 
     stack = []
     sys.setrecursionlimit(15000)
+
     def rec(r, c):
         assert lines[r][c] != '.'
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            r2, c2 = r + dx, c + dy
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            r2, c2 = r + dr, c + dc
             if r2 not in range(len(lines)) or c2 not in range(len(lines[0])):
                 continue
             if lines[r2][c2] == '.':
@@ -139,42 +140,40 @@ def part2(raw: str):
     assert stack
     debug_print_sparse_grid(set(stack), transpose=True)
     pass
-    area = 0
-
     to_flood = deque([(.5, .5)])
     flooded = set()
     while to_flood:
-        r, c = to_flood.popleft()
-        if (r, c) in flooded:
+        origin_r, origin_c = to_flood.popleft()
+        if (origin_r, origin_c) in flooded:
             continue
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            r2, c2 = r + dx, c + dy
-            if not (0 <= r2 < len(lines)-.5 and 0 <= c2 < len(lines[0])-.5):
+        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            r2, c2 = origin_r + dr, origin_c + dc
+            if not (0 <= r2 < len(lines) - .5 and 0 <= c2 < len(lines[0]) - .5):
                 continue
-            if r != r2:
-                r_avg = int((r + r2) / 2)
-                if not connected(r_avg, int(c + .5), r_avg, int(c - .5)):
+            if origin_r != r2:
+                r_avg = int((origin_r + r2) / 2)
+                if not connected(r_avg, int(origin_c + .5), r_avg, int(origin_c - .5)):
                     to_flood.appendleft((r2, c2))
-                elif (r_avg, int(c + .5)) not in stack or (r_avg, int(c - .5)) not in stack:
+                elif (r_avg, int(origin_c + .5)) not in stack or (r_avg, int(origin_c - .5)) not in stack:
                     to_flood.appendleft((r2, c2))
             else:
-                c_avg = int((c + c2) / 2)
-                if not connected(int(r - .5), c_avg, int(r + .5), c_avg):
+                c_avg = int((origin_c + c2) / 2)
+                if not connected(int(origin_r - .5), c_avg, int(origin_r + .5), c_avg):
                     to_flood.appendleft((r2, c2))
-                elif (int(r - .5), c_avg) not in stack or (int(r + .5), c_avg) not in stack:
+                elif (int(origin_r - .5), c_avg) not in stack or (int(origin_r + .5), c_avg) not in stack:
                     to_flood.appendleft((r2, c2))
 
-        flooded.add((r, c))
+        flooded.add((origin_r, origin_c))
     s = 0
     for r1 in range(len(lines)):
         for c1 in range(len(lines[0])):
             wet = True
-            for dx, dy in [(-1, -1), (1, 1), (1, -1), (-1, 1)]:
-                cornerr = r1 + dx/2
-                cornerc = c1 + dy/2
-                if not (0 <= cornerr < len(lines) - .5 and 0 <= cornerc < len(lines[0]) - .5):
+            for dr, dc in [(-1, -1), (1, 1), (1, -1), (-1, 1)]:
+                corner_r = r1 + dr / 2
+                corner_c = c1 + dc / 2
+                if not (0 <= corner_r < len(lines) - .5 and 0 <= corner_c < len(lines[0]) - .5):
                     continue  # outside corners are wet
-                if (cornerr, cornerc) not in flooded:
+                if (corner_r, corner_c) not in flooded:
                     wet = False
                     break
                 else:
