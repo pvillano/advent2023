@@ -2,7 +2,10 @@ __all__ = ["debug_print", "debug_print_grid", "debug_print_sparse_grid", "debug_
 
 import inspect
 import sys
+from itertools import chain
 from typing import Any
+
+import numpy as np
 
 from .std import DEBUG
 
@@ -22,7 +25,7 @@ def debug_print(*args, override=False, **kwargs) -> None:
     return print(*args, **kwargs, file=sys.stderr, flush=True)
 
 
-def debug_print_grid(grid, *, override=False) -> None:
+def debug_print_grid(grid: list[str] or list[list[any]] or np.ndarray, *, override=False) -> None:
     """
 
     :param grid:
@@ -31,9 +34,27 @@ def debug_print_grid(grid, *, override=False) -> None:
     """
     if not (DEBUG or override):
         return
+
+    if isinstance(grid[0], str):
+        for line in grid:
+            print(line, file=sys.stderr)
+        print(file=sys.stderr, flush=True)
+        return
+
+    if isinstance(grid[0][0], bool) or isinstance(grid[0][0], np.bool_):
+        for line in grid:
+            for i in line:
+                print('#' if i else '.', file=sys.stderr, end=" ")
+            print(file=sys.stderr)
+        print(file=sys.stderr, flush=True)
+        return
+
+    max_len = max(map(len, map(str, chain.from_iterable(grid))))
     for line in grid:
-        print(*line, file=sys.stderr, flush=True)
-    print()
+        for i in line:
+            print(str(i).rjust(max_len), file=sys.stderr, end=" ")
+        print(file=sys.stderr)
+    print(file=sys.stderr, flush=True)
 
 
 BASE_INDENT = len(inspect.stack()) + 1

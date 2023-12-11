@@ -1,6 +1,7 @@
 import sys
 from collections import deque
-from math import inf
+
+import numpy as np
 
 from utils import benchmark, get_day, test
 
@@ -69,25 +70,25 @@ def part1(raw: str):
     origin_r, origin_c = find_s(lines)
 
     def find_furthest():
-        distances = [[inf] * len(l) for l in lines]
-        distances[origin_r][origin_c] = 0
+        distances = np.full((len(lines), len(lines[0])), -1)
+        distances[origin_r, origin_c] = 0
         best = 0
         todo = deque([(origin_r, origin_c)])
         while todo:
             r, c = todo.popleft()
-            assert distances[r][c] <= best
+            assert distances[r, c] <= best
             assert lines[r][c] != '.'
             for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 r2, c2 = r + dx, c + dy
                 if r2 not in range(len(lines)) or c2 not in range(len(lines[0])):
                     continue
-                if distances[r2][c2] != inf:
+                if distances[r2, c2] != -1:
                     continue
                 if not connected(lines, r, c, r2, c2):
                     continue
-                distances[r2][c2] = distances[r][c] + 1
+                distances[r2, c2] = distances[r, c] + 1
                 todo.append((r2, c2))
-                best = max(best, distances[r2][c2])
+                best = max(best, distances[r2, c2])
         return best
 
     return find_furthest()
@@ -128,28 +129,30 @@ def part2(raw: str):
     # debug_print_sparse_grid(set(stack), transpose=True)
 
     def flood():
-        seen = set()
-        to_flood = deque([(.5, .5)])
+        seen = np.zeros((len(lines) + 1, len(lines[0]) + 1), dtype=bool)
+        to_flood = [(0, 0)]
         while to_flood:
-            src_r, src_c = to_flood.popleft()
-            if (src_r, src_c) in seen:
+            src_r, src_c = to_flood.pop()
+            if seen[src_r, src_c]:
                 continue
             for delta_r, delta_c in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 dest_r, dest_c = src_r + delta_r, src_c + delta_c
-                if not (0.5 <= dest_r < len(lines) - .5 and 0.5 <= dest_c < len(lines[0]) - .5):
+                if not (0 <= dest_r <= len(lines) and 0 <= dest_c <= len(lines[0])):
+                    continue
+                if seen[dest_r, dest_c]:
                     continue
                 if src_r != dest_r:
-                    r_avg = int((src_r + dest_r) / 2)
-                    p1, p2 = (r_avg, int(src_c + .5)), (r_avg, int(src_c - .5))
+                    r_avg = (src_r + dest_r + 1) / 2
+                    p1, p2 = (r_avg, src_c + 1), (r_avg, src_c)
                 else:
-                    c_avg = int((src_c + dest_c) / 2)
-                    p1, p2 = (int(src_r - .5), c_avg), (int(src_r + .5), c_avg)
+                    c_avg = (src_c + dest_c + 1) / 2
+                    p1, p2 = (src_r, c_avg), (src_r + 1, c_avg)
 
                 if p1 not in stack or p2 not in stack:
-                    to_flood.appendleft((dest_r, dest_c))
-                elif abs(stack[p1] - stack[p2]) not in (1,len(stack)-1):
-                    to_flood.appendleft((dest_r, dest_c))
-            seen.add((src_r, src_c))
+                    to_flood.append((dest_r, dest_c))
+                elif abs(stack[p1] - stack[p2]) not in (1, len(stack) - 1):
+                    to_flood.append((dest_r, dest_c))
+            seen[src_r, src_c] = True
         return seen
 
     flooded = flood()
@@ -159,16 +162,14 @@ def part2(raw: str):
         for r in range(len(lines)):
             for c in range(len(lines[0])):
                 wet = True
-                for delta_r, delta_c in [(-1, -1), (1, 1), (1, -1), (-1, 1)]:
-                    corner_r = r + delta_r / 2
-                    corner_c = c + delta_c / 2
-                    if not (0 <= corner_r < len(lines) - .5 and 0 <= corner_c < len(lines[0]) - .5):
+                for delta_r, delta_c in [(0, 0), (0, 1), (1, 0), (1, 1)]:
+                    corner_r = r + delta_r
+                    corner_c = c + delta_c
+                    if not (0 <= corner_r < len(lines) and 0 <= corner_c < len(lines[0])):
                         continue  # outside corners are wet
-                    if (corner_r, corner_c) not in flooded:
+                    if not flooded[corner_r, corner_c]:
                         wet = False
                         break
-                    else:
-                        pass
                 if wet:
                     wet_count += 1
         return wet_count
