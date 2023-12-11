@@ -1,12 +1,11 @@
 __all__ = ["AdjacencyListType", "topological_sort"]
 
-from collections.abc import Callable
-from typing import Any
+from collections.abc import Callable, Hashable
 
-AdjacencyListType = dict[int, list[int]] | list[list[int]]
+AdjacencyListType = dict[Hashable, list[Hashable]] | list[list[int]]
 
 
-def densify_keys(adj_list: dict[Any, list[Any]]) -> tuple[AdjacencyListType, list, dict]:
+def densify_keys(adj_list: dict[Hashable, list[Hashable]]) -> tuple[list[list[int]], list, dict]:
     """
     Replaces an adjacency list with arbitrary nodes with one using only ints
 
@@ -28,9 +27,9 @@ def topological_sort(adj_list: AdjacencyListType) -> list[int]:
     visited = set()
     stack = []
 
-    def _top_sort_helper(v: int):
+    def _top_sort_helper(v: Hashable):
         visited.add(v)
-        for neighbor in adj_list[v]:
+        for neighbor in adj_list.get(v, []):
             if neighbor not in visited:
                 _top_sort_helper(neighbor)
         stack.append(v)
