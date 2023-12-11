@@ -124,6 +124,7 @@ def part2(raw: str):
     recurse(origin_r, origin_c)
     assert stack
     stack = {rc: i for i, rc in enumerate(stack)}
+
     # debug_print_sparse_grid(set(stack), transpose=True)
 
     def flood():
@@ -139,16 +140,15 @@ def part2(raw: str):
                     continue
                 if src_r != dest_r:
                     r_avg = int((src_r + dest_r) / 2)
-                    if (r_avg, int(src_c + .5)) not in stack or (r_avg, int(src_c - .5)) not in stack:
-                        to_flood.appendleft((dest_r, dest_c))
-                    elif not connected(lines, r_avg, int(src_c + .5), r_avg, int(src_c - .5)):
-                        to_flood.appendleft((dest_r, dest_c))
+                    p1, p2 = (r_avg, int(src_c + .5)), (r_avg, int(src_c - .5))
                 else:
                     c_avg = int((src_c + dest_c) / 2)
-                    if (int(src_r - .5), c_avg) not in stack or (int(src_r + .5), c_avg) not in stack:
-                        to_flood.appendleft((dest_r, dest_c))
-                    elif not connected(lines, int(src_r - .5), c_avg, int(src_r + .5), c_avg):
-                        to_flood.appendleft((dest_r, dest_c))
+                    p1, p2 = (int(src_r - .5), c_avg), (int(src_r + .5), c_avg)
+
+                if p1 not in stack or p2 not in stack:
+                    to_flood.appendleft((dest_r, dest_c))
+                elif abs(stack[p1] - stack[p2]) not in (1,len(stack)-1):
+                    to_flood.appendleft((dest_r, dest_c))
             seen.add((src_r, src_c))
         return seen
 
