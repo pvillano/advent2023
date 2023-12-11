@@ -43,8 +43,8 @@ def part1(raw: str):
             if char == "#":
                 stars.append((r, c))
     s = 0
-    for (p1r, p1c), (p2r, p2c) in combinations(stars, 2):
-        d = abs(p1r - p2r) + abs(p1c - p2c)
+    for (star1row, star1col), (star2row, star2col) in combinations(stars, 2):
+        d = abs(star1row - star2row) + abs(star1col - star2col)
         s += d
     return s
 
