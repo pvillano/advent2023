@@ -36,7 +36,10 @@ expected2 = None
 
 
 def parse(raw: str):
-    return raw.splitlines()
+    ret = []
+    for line in raw.splitlines():
+        ret.append(line)
+    return ret
 
 
 def part1(raw: str):
