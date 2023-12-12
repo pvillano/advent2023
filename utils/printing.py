@@ -57,7 +57,7 @@ def debug_print_grid(grid: list[str] or list[list[any]] or np.ndarray, *, overri
     print(file=sys.stderr, flush=True)
 
 
-BASE_INDENT = len(inspect.stack()) + 1
+BASE_INDENT = len(inspect.stack()) - 7
 
 
 def debug_print_recursive(*args, override=False, **kwargs) -> None:
