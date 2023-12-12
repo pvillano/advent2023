@@ -67,7 +67,6 @@ def rec(springs: str, spans: tuple[int]):
         if springs and "#" in springs:
             return 0
         return 1
-    # assert len(counts) != 0
     if len(springs) == 0 or not ('#' in springs or '?' in springs):
         return 0  # need what don't have
     while springs[0] == ".":
