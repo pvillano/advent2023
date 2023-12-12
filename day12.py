@@ -18,9 +18,9 @@ expected2 = 525152
 def parse(raw: str):
     ret = []
     for line in raw.splitlines():
-        sprints, counts = line.split()
+        springs, counts = line.split()
         counts = extract_ints(counts)
-        ret.append((sprints, counts))
+        ret.append((springs, counts))
     return ret
 
 
@@ -38,64 +38,64 @@ def arrangements(s):
 
 
 def part1(raw: str):
-    s = 0
-    for sprints, counts in parse(raw):
-        ss = 0
-        for arrangement in arrangements(sprints):
-            blorp = arrangement.split(".")
-            blorp = [len(x) for x in blorp if x != ""]
-            if tuple(blorp) == counts:
-                ss += 1
-        debug_print(sprints, ss)
-        s += ss
-    return s
+    total_arrangements = 0
+    for springs, spans in parse(raw):
+        partial_arrangements = 0
+        for arrangement in arrangements(springs):
+            runs_with_spaces = arrangement.split(".")
+            run_lengths = [len(x) for x in runs_with_spaces if x != ""]
+            if tuple(run_lengths) == spans:
+                partial_arrangements += 1
+        debug_print(springs, partial_arrangements)
+        total_arrangements += partial_arrangements
+    return total_arrangements
 
 
 def parse2(raw: str):
     ret = []
     for line in raw.splitlines():
-        sprints, counts = line.split()
+        springs, counts = line.split()
         counts = extract_ints(counts)
-        ret.append(("?".join([sprints] * 5), counts * 5))
+        ret.append(("?".join([springs] * 5), counts * 5))
     return ret
 
 
 @cache
-def rec(sprints: str, counts: tuple[int]):
-    # debug_print_recursive("start", sprints, counts)
-    if len(counts) == 0:
-        if sprints and "#" in sprints:
+def rec(springs: str, spans: tuple[int]):
+    # debug_print_recursive("start", springs, counts)
+    if len(spans) == 0:
+        if springs and "#" in springs:
             return 0
         return 1
     # assert len(counts) != 0
-    if len(sprints) == 0 or not ('#' in sprints or '?' in sprints):
+    if len(springs) == 0 or not ('#' in springs or '?' in springs):
         return 0  # need what don't have
-    while sprints[0] == ".":
-        sprints = sprints[1:]
-    spring_length = counts[0]
+    while springs[0] == ".":
+        springs = springs[1:]
+    spring_length = spans[0]
     ways = 0
-    if set(sprints[:spring_length]) <= set("#?"):
-        if len(sprints) == spring_length or (spring_length < len(sprints) and sprints[spring_length] in "?."):
-            ways += rec(sprints[spring_length + 1:], counts[1:])
-    if sprints[0] == "?":
-        ways += rec(sprints[1:], counts)
-    # debug_print_recursive("end", sprints, counts, ways)
+    if set(springs[:spring_length]) <= set("#?"):
+        if len(springs) == spring_length or (spring_length < len(springs) and springs[spring_length] in "?."):
+            ways += rec(springs[spring_length + 1:], spans[1:])
+    if springs[0] == "?":
+        ways += rec(springs[1:], spans)
+    # debug_print_recursive("end", springs, counts, ways)
     return ways
 
 
 def part2(raw: str):
-    s = 0
-    for sprints, counts in parse2(raw):
-        ss = rec(sprints, counts)
-        debug_print(sprints, ss)
-        s += ss
-    return s
+    total_arrangements = 0
+    for springs, spans in parse2(raw):
+        partial_arrangements = rec(springs, spans)
+        debug_print(springs, partial_arrangements)
+        total_arrangements += partial_arrangements
+    return total_arrangements
 
 
 def main():
-    # test(part1, test1, expected1)
+    test(part1, test1, expected1)
     raw = get_day(12, override=True)
-    # benchmark(part1, raw)
+    benchmark(part1, raw)
     test(part2, test2, expected2)
     benchmark(part2, raw)
 
