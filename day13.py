@@ -33,7 +33,7 @@ def parse(raw: str):
     return ret
 
 
-def candidates(line):
+def find_candidates(line):
     for i in range(1, len(line)):
         left, right = line[:i], line[i:]
         left = left[::-1]
@@ -44,50 +44,26 @@ def candidates(line):
 def part1(raw: str):
     s = 0
     for grid in parse(raw):
-        cands = set(range(len(grid[0])))
-        for line in grid:
-            cands &= set(candidates(line))
-        if len(cands) == 1:
-            s += list(cands)[0]
-            continue
-        grid = transpose(grid)
-        cands = set(range(len(grid[0])))
-        for line in grid:
-            cands &= set(candidates(line))
-        if len(cands) == 1:
-            s += list(cands)[0] * 100
-            continue
+        for flipped, factor in ((grid, 1), (transpose(grid), 100)):
+            candidates = set(range(1, len(flipped[0])))
+            for line in flipped:
+                candidates &= set(find_candidates(line))
+            if len(candidates) == 1:
+                s += list(candidates)[0] * factor
     return s
 
 
 def part2(raw: str):
     s = 0
     for grid in parse(raw):
-        cands = Counter()
-        for line in grid:
-            for c in candidates(line):
-                cands[c] += 1
-        broke = False
-        for second_most_common, smc_count in cands.most_common(2):
-            if smc_count == len(grid) - 1:
-                s += second_most_common
-                broke = True
-                break
-        if broke:
-            continue
-        grid = transpose(grid)
-        cands = Counter()
-        for line in grid:
-            for c in candidates(line):
-                cands[c] += 1
-        broke = False
-        for second_most_common, smc_count in cands.most_common(2):
-            if smc_count == len(grid) - 1:
-                s += second_most_common * 100
-                broke = True
-                break
-        if broke:
-            continue
+        for flipped, factor in ((grid, 1), (transpose(grid), 100)):
+            candidates = Counter()
+            for line in flipped:
+                for candidate in find_candidates(line):
+                    candidates[candidate] += 1
+            for less_common, less_common_count in candidates.most_common(2):
+                if less_common_count == len(flipped) - 1:
+                    s += less_common * factor
     return s
 
 
