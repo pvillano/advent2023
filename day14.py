@@ -1,3 +1,5 @@
+from collections import Counter
+
 from utils import benchmark, get_day, test, debug_print_grid
 from utils.itertools2 import transpose
 
@@ -19,14 +21,11 @@ expected2 = 64
 
 
 def parse(raw: str):
-    ret = []
-    for line in raw.splitlines():
-        ret.append(line)
-    return ret
+    return raw.splitlines()
 
 
-def part1(raw: str):
-    grid = transpose(parse(raw))
+def flow_north(grid):
+    grid = transpose(grid)
     grid = [list(row) for row in grid]
     for row in grid:
         for i in range(len(row)):
@@ -35,43 +34,47 @@ def part1(raw: str):
             while i - 1 in range(len(row)) and row[i - 1] == ".":
                 row[i - 1], row[i] = row[i], row[i - 1]
                 i -= 1
-    grid = transpose(grid)
-    debug_print_grid(grid)
+    return transpose(grid)
+
+
+def calc_load(grid):
     load = 0
-    for i, multiplier in enumerate(reversed(range(1, len(grid) + 1))):
-        for ch in grid[i]:
-            if ch == "O":
-                load += multiplier
+    for i, row in enumerate(grid):
+        multiplier = len(grid) - i
+        load += Counter(row)["O"] * multiplier
     return load
 
 
-def hashable(grid):
+def part1(raw: str):
+    grid = parse(raw)
+    grid = flow_north(grid)
+    return calc_load(grid)
+
+
+def freeze_grid(grid):
     return tuple("".join(line) for line in grid)
 
 
+def rotate_grid(grid):
+    grid = transpose(grid)
+    return [list(reversed(row)) for row in grid]
+
+
 def part2(raw: str):
-    grid = transpose(parse(raw))
-    grid = [list(row) for row in grid]
+    grid = parse(raw)
     seen_at = dict()
-    for cycle in range(0, 30000000000000000):
+    for cycle in range(1, 1000000000):
         for wash in range(4):
-            for row in grid:
-                for i in range(len(row)):
-                    if row[i] in "#.":
-                        continue
-                    while i - 1 in range(len(row)) and row[i - 1] == ".":
-                        row[i - 1], row[i] = row[i], row[i - 1]
-                        i -= 1
-            grid = transpose(grid)
-            grid = [list(row) for row in grid]
-            grid = list(reversed(grid))
-        debug_print_grid(transpose(grid))
-        if hashable(grid) not in seen_at:
-            seen_at[hashable(grid)] = cycle
+            grid = flow_north(grid)
+            grid = rotate_grid(grid)
+        if raw == test2 and cycle < 4:
+            debug_print_grid(grid)
+        if freeze_grid(grid) not in seen_at:
+            seen_at[freeze_grid(grid)] = cycle
             continue
-        first_seen = seen_at[hashable(grid)]
+        first_seen = seen_at[freeze_grid(grid)]
         period = cycle - first_seen
-        remainder = (1000000000 - first_seen - 1) % period
+        remainder = (1000000000 - first_seen) % period
         target = first_seen + remainder
         for k, v in seen_at.items():
             if v != target:
@@ -79,20 +82,10 @@ def part2(raw: str):
             return calc_load(k)
 
 
-def calc_load(grid):
-    load = 0
-    grid = transpose(grid)
-    for i, multiplier in enumerate(reversed(range(1, len(grid) + 1))):
-        for ch in grid[i]:
-            if ch == "O":
-                load += multiplier
-    return load
-
-
 def main():
-    # test(part1, test1, expected1)
+    test(part1, test1, expected1)
     raw = get_day(14, override=True)
-    # benchmark(part1, raw)
+    benchmark(part1, raw)
     test(part2, test2, expected2)
     benchmark(part2, raw)
 
