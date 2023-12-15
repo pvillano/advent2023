@@ -1,3 +1,5 @@
+from functools import reduce
+
 from utils import benchmark, get_day, test, debug_print
 
 test1 = """rn=1,cm-,qp=3,cm=2,qp-,pc=4,ot=9,ab=5,pc-,pc=6,ot=7"""
@@ -8,24 +10,13 @@ test2 = test1
 expected2 = 145
 
 
-def parse(raw: str):
-    ret = []
-    for line in raw.split(","):
-        ret.append(line)
-    return ret
-
-
-def box_hash(raw: str):
-    cv = 0
-    for ch in raw:
-        cv += ord(ch)
-        cv *= 17
-        cv %= 256
-    return cv
+def box_hash(label: str):
+    return reduce(lambda t, s: ((t + ord(s)) * 17) % 256, label, 0)
 
 
 def part1(raw: str):
-    return sum(map(box_hash, parse(raw)))
+    return sum(map(box_hash, raw.split(",")))
+    # return sum(map(lambda w: reduce(lambda t, s: ((t + ord(s)) * 17) % 256, w, 0), raw.split(",")))
 
 
 def part2(raw: str):
@@ -34,8 +25,7 @@ def part2(raw: str):
         if "=" in line:
             label, focal_length = line.split("=")
             focal_length = int(focal_length)
-            box_id = box_hash(label)
-            box = boxes[box_id]
+            box = boxes[box_hash(label)]
             done = False
             for i in range(len(box)):
                 if box[i][0] == label:
@@ -52,10 +42,13 @@ def part2(raw: str):
                 if box[i][0] == label:
                     box.remove(box[i])
                     break
-        debug_print(f'After "{line}":')
-        for box in boxes:
-            if box:
-                debug_print(box)
+        if raw == test2:
+            debug_print(f'After "{line}":')
+            for i, box in enumerate(boxes):
+                if box:
+                    boxstr = str(box)[1:-1].replace(",", "")
+                    debug_print(f"Box {i}:", boxstr)
+            debug_print()
     s = 0
     for i, box in enumerate(boxes, start=1):
         for j, lens in enumerate(box, start=1):
