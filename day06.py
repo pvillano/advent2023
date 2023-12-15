@@ -1,5 +1,5 @@
 from utils import benchmark, get_day, extract_ints
-from utils.itertools2 import transpose
+from utils.grids import transpose
 
 test = """Time:      7  15   30
 Distance:  9  40  200"""

@@ -2,8 +2,7 @@ __all__ = ["otqdm"]
 
 from math import log, exp
 import time
-from typing import Sized, Iterable
-
+from collections.abc import Sized, Iterable
 UTF = " " + "".join(map(chr, range(0x258F, 0x2587, -1)))
 
 

@@ -1,7 +1,7 @@
 from collections import Counter
 
 from utils import benchmark, get_day, test
-from utils.itertools2 import transpose
+from utils.grids import transpose
 
 test1 = """#.##..##.
 ..#.##.#.

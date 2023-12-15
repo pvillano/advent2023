@@ -2,28 +2,22 @@ __all__ = [
     "benchmark",
     "DEBUG",
     "flatten",
-    "pipe",
     "test"
 ]
 
+import datetime
 import sys
 import time
-import datetime
+from collections.abc import Callable
 from itertools import chain
 from pprint import pprint as not_my_pp
-from typing import Callable, Any
+from typing import Any
 
 has_trace = hasattr(sys, 'gettrace') and sys.gettrace() is not None
 has_breakpoint = sys.breakpointhook.__module__ != "sys"
 DEBUG = has_trace or has_breakpoint
 
 flatten = chain.from_iterable
-
-
-def pipe(first, *args: Callable):
-    for func in args:
-        first = func(first)
-    return first
 
 
 def pprint(object_, stream=None, indent=1, width=80, depth=None, *,
@@ -51,7 +45,6 @@ def test(func: Callable, data, expected):
         print("Actual:", ans, file=out_stream, flush=True)
         exit(1)
     print(f"Passed in {seconds:0.3f} seconds\n", file=out_stream, flush=DEBUG)
-
 
 
 def benchmark(func: Callable, *args, **kwargs) -> Any:

@@ -3,7 +3,7 @@ __all__ = ["get_day", "extract_ints"]
 import os
 import re
 from functools import cache
-from typing import Iterable
+from collections.abc import Iterable
 
 import requests
 

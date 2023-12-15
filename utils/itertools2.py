@@ -1,19 +1,14 @@
-__all__ = ["rotations", "transpose"]
+__all__ = ["rotations"]
 
 from itertools import chain
-from typing import Iterable
+from collections.abc import Iterable
+from utils.grids import transpose
 
 
 def rotations(iterable: Iterable):
     iterable = tuple(iterable)
     for idx in range(len(iterable)):
         yield tuple(chain(iterable[-idx:], iterable[:-idx]))
-
-
-def transpose(iterable):
-    iterable = list(iterable)
-    assert len(set(map(len, iterable))) == 1
-    return zip(*iterable)
 
 
 def main():

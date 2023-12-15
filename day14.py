@@ -1,7 +1,7 @@
 from collections import Counter
 
 from utils import benchmark, get_day, test, debug_print_grid
-from utils.itertools2 import transpose
+from utils.grids import transpose
 
 test1 = """O....#....
 O.OO#....#
@@ -55,18 +55,13 @@ def freeze_grid(grid):
     return tuple("".join(line) for line in grid)
 
 
-def rotate_grid(grid):
-    grid = transpose(grid)
-    return [list(reversed(row)) for row in grid]
-
-
 def part2(raw: str):
     grid = parse(raw)
     seen_at = dict()
     for cycle in range(1, 1000000000):
         for wash in range(4):
             grid = flow_north(grid)
-            grid = rotate_grid(grid)
+            grid = rotate_clockwise(grid)
         if raw == test2 and cycle < 4:
             debug_print_grid(grid)
         if freeze_grid(grid) not in seen_at:
