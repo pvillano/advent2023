@@ -11,7 +11,7 @@ test1 = """.|...\\....
 ..../.\\\\..
 .-.-/..|..
 .|....-|.\\
-..//.|...."""
+..//.|...."""  # :\
 
 expected1 = 46
 
@@ -20,10 +20,7 @@ expected2 = 51
 
 
 def parse(raw: str):
-    ret = []
-    for line in raw.splitlines():
-        ret.append(line)
-    return ret
+    return raw.splitlines()
 
 
 def part1(raw: str, start=((0, -1), (0, 1))):
@@ -77,7 +74,6 @@ def part2(raw: str):
         best = max(best, part1(raw, start))
         start = ((col_count, c), (-1, 0))
         best = max(best, part1(raw, start))
-
     return best
 
 
