@@ -1,11 +1,11 @@
-import graphs
-import grids
-import itertools2
-import otqdm
-import parsing
-import printing
-import std
-import submit
+from . import graphs
+from . import grids
+from . import itertools2
+from . import otqdm
+from . import parsing
+from . import printing
+from . import std
+from . import submit
 
 from .parsing import *
 from .printing import *
