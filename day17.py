@@ -46,7 +46,7 @@ def part1(raw: str):
     seen = np.full((row_count, col_count, 3, 3, 4), np.iinfo(int).max)
     seen[0, 0, :, :, :] = 0
     q = deque([(0, 0, 0, 0, 0)])
-
+    worst = np.iinfo(int).max
     while q:
         r, c, dr, dc, t = q.pop()
         d = seen[r, c, dr, dc, t]
@@ -57,26 +57,23 @@ def part1(raw: str):
             if next_dr == dr and next_dc == dc:
                 if t == 3:
                     continue
-                t2 = t + 1
+                next_t = t + 1
             else:
-                t2 = 1
-            r2, c2 = r + next_dr, c + next_dc
-            if r2 not in range(row_count) or c2 not in range(col_count):
+                next_t = 1
+            next_r, next_c = r + next_dr, c + next_dc
+            if next_r not in range(row_count) or next_c not in range(col_count):
                 continue
-            d2 = d + grid[r2][c2]
-            # if d2 >= worst:
-            #     continue
-            # if r2 == row_count - 1 and c2 == col_count - 1:
-            #     worst = min(worst, d2)
-            best = seen[r2, c2, next_dr, next_dc, t2]
-            if d2 < best:
-                seen[r2, c2, next_dr, next_dc, t2] = d2
-                q.appendleft((r2, c2, next_dr, next_dc, t2))
+            next_d = d + grid[next_r][next_c]
+            if next_d >= worst:
+                continue
+            if next_r == row_count - 1 and next_c == col_count - 1:
+                worst = min(worst, next_d)
+            best = seen[next_r, next_c, next_dr, next_dc, next_t]
+            if next_d < best:
+                seen[next_r, next_c, next_dr, next_dc, next_t] = next_d
+                q.appendleft((next_r, next_c, next_dr, next_dc, next_t))
 
     return seen[-1, -1, :, :, :].min()
-
-
-# Completed in 369.942 seconds. kek
 
 
 def part2(raw: str):
@@ -98,26 +95,25 @@ def part2(raw: str):
             if next_dr == dr and next_dc == dc:
                 if t >= 10:
                     continue
-                t2 = t + 1
+                next_t = t + 1
             else:
                 if t < 4:
                     continue
                 else:
-                    t2 = 1
+                    next_t = 1
 
-            r2, c2 = r + next_dr, c + next_dc
-            if r2 not in range(row_count) or c2 not in range(col_count):
+            next_r, next_c = r + next_dr, c + next_dc
+            if next_r not in range(row_count) or next_c not in range(col_count):
                 continue
-            d2 = d + grid[r2][c2]
-            if d2 >= worst:
+            next_d = d + grid[next_r][next_c]
+            if next_d >= worst:
                 continue
-            if r2 == row_count - 1 and c2 == col_count - 1 and t2 >= 4:
-                worst = min(worst, d2)
-                print(worst, len(q))
-            best = seen[r2, c2, next_dr, next_dc, t2]
-            if d2 < best:
-                seen[r2, c2, next_dr, next_dc, t2] = d2
-                q.appendleft((r2, c2, next_dr, next_dc, t2))
+            if next_r == row_count - 1 and next_c == col_count - 1 and next_t >= 4:
+                worst = min(worst, next_d)
+            best = seen[next_r, next_c, next_dr, next_dc, next_t]
+            if next_d < best:
+                seen[next_r, next_c, next_dr, next_dc, next_t] = next_d
+                q.appendleft((next_r, next_c, next_dr, next_dc, next_t))
     debug_print_grid(seen.min((2, 3, 4)))
     for i in range(10):
         debug_print(i, seen[-1, -1, :, :, i].min())
@@ -127,7 +123,7 @@ def part2(raw: str):
 def main():
     test(part1, test1, expected1)
     raw = get_day(17, override=True)
-    # benchmark(part1, raw)
+    benchmark(part1, raw)
     test(part2, test2, expected2)
     test(part2, test22, expected22)
     benchmark(part2, raw)
