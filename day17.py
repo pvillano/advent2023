@@ -38,6 +38,7 @@ def part1(raw: str):
     seen = {(0, 0, 0, 0, 0): 0}
     q = deque([(0, 0, 0, 0, 0)])
 
+    worst = inf
     while q:
         r, c, dr, dc, t = q.pop()
         d = seen[(r, c, dr, dc, t)]
@@ -54,7 +55,13 @@ def part1(raw: str):
             if r2 not in range(row_count) or c2 not in range(col_count):
                 continue
             d2 = d + grid[r2][c2]
-            best = seen.get((r2, c2, next_dr, next_dc, t2), inf)
+            if d2 >= worst:
+                continue
+            if r2 == row_count - 1 and c2 == col_count - 1:
+                worst = min(worst, d2)
+            best = inf
+            for i in range(t2):
+                best = min(best, seen.get((r2, c2, next_dr, next_dc, t2), inf))
             if d2 < best:
                 seen[(r2, c2, next_dr, next_dc, t2)] = d2
                 q.append((r2, c2, next_dr, next_dc, t2))
