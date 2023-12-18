@@ -1,6 +1,6 @@
-import numpy as np
+from itertools import chain
 
-from utils import benchmark, get_day, test, debug_print, debug_print_grid, debug_print_sparse_grid
+from utils import benchmark, get_day, test
 
 test1 = """R 6 (#70c710)
 D 5 (#0dc571)
@@ -36,83 +36,22 @@ def parse(raw: str):
     for line in raw.splitlines():
         facing, distance, color = line.split()
         distance = int(distance)
-        ret.append((facing, distance, color))
+        ret.append((facing, distance))
     return ret
 
 
+def to_points(lines):
+    x, y = 0, 0
+    points = [(0, 0)]
+    for facing, distance in lines:
+        x += UDLR[facing][0] * distance
+        y += UDLR[facing][1] * distance
+        points.append((x, y))
+    return points
+
+
 def part1(raw: str):
-    lines = parse(raw)
-    path = [(0, 0)]
-    pos = [0, 0]
-    for facing, distance, color in lines:
-        for i in range(distance):
-            pos[0] += UDLR[facing][0]
-            pos[1] += UDLR[facing][1]
-            path.append(tuple(pos))
-    debug_print_sparse_grid(set(path))
-    assert path[0] == path[-1]
-    path = path[:-1]
-    flooded = flood(path)
-    wet_count = count_wet(flooded)
-    area_total = flooded.shape[0] * flooded.shape[1]
-    area_stack = len(path)
-    debug_print(f"{wet_count=} {area_total=} {area_stack=}")
-    debug_print_grid(flooded)
-    return area_total - wet_count
-
-
-def count_wet(flooded):
-    wet_count = 0
-    for r in range(flooded.shape[0]):
-        for c in range(flooded.shape[1]):
-            wet = True
-            for delta_r, delta_c in [(0, 0), (0, 1), (1, 0), (1, 1)]:
-                corner_r = r + delta_r
-                corner_c = c + delta_c
-                if not (0 <= corner_r < flooded.shape[0] and 0 <= corner_c < flooded.shape[1]):
-                    continue  # outside corners are wet
-                if not flooded[corner_r, corner_c]:
-                    wet = False
-                    break
-            if wet:
-                wet_count += 1
-    return wet_count
-
-
-def flood(path: list[tuple[int, int]]):
-    xmin = min(xy[0] for xy in path)
-    ymin = min(xy[1] for xy in path)
-    path2 = [(x - xmin + 1, y - ymin + 1) for x, y in path]
-    xmax = max(xy[0] for xy in path2)
-    ymax = max(xy[1] for xy in path2)
-
-    seen = np.zeros((xmax + 1, ymax + 1), dtype=bool)
-    stack = {tuple(rc): i for i, rc in enumerate(path2)}
-
-    to_flood = [(0, 0)]
-    while to_flood:
-        src_r, src_c = to_flood.pop()
-        if seen[src_r, src_c]:
-            continue
-        for delta_r, delta_c in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            dest_r, dest_c = src_r + delta_r, src_c + delta_c
-            if not (0 <= dest_r < seen.shape[0] and 0 <= dest_c < seen.shape[1]):
-                continue
-            if seen[dest_r, dest_c]:
-                continue
-            if src_r != dest_r:
-                r_avg = (src_r + dest_r + 1) / 2
-                p1, p2 = (r_avg, src_c + 1), (r_avg, src_c)
-            else:
-                c_avg = (src_c + dest_c + 1) / 2
-                p1, p2 = (src_r, c_avg), (src_r + 1, c_avg)
-
-            if p1 not in stack or p2 not in stack:
-                to_flood.append((dest_r, dest_c))
-            elif abs(stack[p1] - stack[p2]) not in (1, len(stack) - 1):
-                to_flood.append((dest_r, dest_c))
-        seen[src_r, src_c] = True
-    return seen
+    return shoelace_area(to_points(parse(raw)))
 
 
 def parse2(raw):
@@ -124,26 +63,20 @@ def parse2(raw):
         facing = "RDLU"[int(color[-1])]
         ret.append((facing, distance))
     return ret
+a
 
 
 def shoelace_area(points):
     inside = 0
-    outside = 0
-    for (x1, y1), (x2, y2) in zip(points, points[1:] + [points[0]]):
-        inside += (x2 - x1) * (y2 + y1)
-        outside += abs(x2 - x1) + abs(y2 - y1)
-    return inside/2 + outside/2 + 1
+    outside = 1
+    for (x1, y1), (x2, y2) in zip(points, chain(points[1:], points[0:1])):
+        inside += (x2 - x1) * (y2 + y1) / 2
+        outside += (abs(x2 - x1) + abs(y2 - y1)) / 2
+    return int(abs(inside) + outside)
 
 
 def part2(raw: str):
-    lines = parse2(raw)
-    x, y = 0, 0
-    points = [(0,0)]
-    for facing, distance in lines:
-        x += UDLR[facing][0] * distance
-        y += UDLR[facing][1] * distance
-        points.append((x,y))
-    return shoelace_area(points)
+    return shoelace_area(to_points(parse2(raw)))
 
 
 def main():
