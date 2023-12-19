@@ -27,13 +27,6 @@ DAYNUMBER = 0
 ################################################################################
 from utils import benchmark, get_day, test
 
-test1 = """"""
-
-expected1 = None
-
-test2 = test1
-expected2 = None
-
 
 def parse(raw: str):
     ret = []
@@ -48,6 +41,14 @@ def part1(raw: str):
 
 def part2(raw: str):
     lines = parse(raw)
+
+
+test1 = """"""
+
+expected1 = None
+
+test2 = test1
+expected2 = None
 
 
 def main():
