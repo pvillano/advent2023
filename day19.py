@@ -85,9 +85,11 @@ def part2(raw: str):
     for ruleset in rules.values():
         for var, cond, val, to in ruleset:
             if val is not None:
-                critical_values[var].add(val-1)
-                critical_values[var].add(val)
-                critical_values[var].add(val+1)
+                if cond == op.lt:
+                    critical_values[var].add(val)
+                else:
+                    assert cond == op.gt
+                    critical_values[var].add(val+1)
     for k in critical_values.keys():
         cvs = critical_values[k].add(1)
         cvs = critical_values[k].add(4001)
