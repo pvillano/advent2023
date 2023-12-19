@@ -1,11 +1,9 @@
+import copy
 import operator as op
 from collections import defaultdict
 from functools import reduce
-from itertools import product
 
-from tqdm import tqdm
-
-from utils import benchmark, get_day, test, debug_print
+from utils import benchmark, get_day, test
 
 test1 = """px{a<2006:qkq,m>2090:A,rfg}
 pv{a>1716:R,A}
@@ -76,41 +74,31 @@ def part1(raw: str):
             s += sum(part.values())
     return s
 
-def make_parts(cvs):
-    blorg = [zip(cvs[x], cvs[x][1:]) for x in "xmas"]
-    for xmas in product(*blorg):
-        yield {k:v for k,v in zip("xmas", xmas)}
 
 def part2(raw: str):
     rules, _ = parse(raw)
-    critical_values = defaultdict(set)
-    for ruleset in rules.values():
-        for var, cond, val, to in ruleset:
-            if val is not None:
-                if cond == op.lt:
-                    critical_values[var].add(val)
-                else:
-                    assert cond == op.gt
-                    critical_values[var].add(val+1)
-    for k in critical_values.keys():
-        critical_values[k].add(1)
-        critical_values[k].add(4001)
-        critical_values[k] = sorted(critical_values[k])
 
-    s = 0
-    for part in tqdm(list(make_parts(critical_values))): # inclusive, exclusive
-        station = "in"
+    def recurse(part, station):
         while station not in ("A", "R"):
             for var, cond, val, to in rules[station]:
-                assert cond(part[var][0], val) == cond(part[var][1] - 1, val)
-                if cond(part[var][0], val):
+                if cond(part[var][0], val) != cond(part[var][1] - 1, val):
+                    if cond == op.gt:
+                        val += 1
+                    vals = sorted(part[var] + [val])
+                    part1 = copy.deepcopy(part)
+                    part1[var] = vals[:2]
+                    part2 = copy.deepcopy(part)
+                    part2[var] = vals[1:]
+                    return recurse(part1, station) + recurse(part2, station)
+                if cond(part[var][0], val) and cond(part[var][1] - 1, val):
                     station = to
                     break
         if station == "A":
-            s += reduce(op.mul, [x[1] - x[0] for x in part.values()], 1)
-    return s
+            return reduce(op.mul, [x[1] - x[0] for x in part.values()], 1)
+        assert station == "R"
+        return 0
 
-
+    return recurse({k: [1, 4001] for k in "xmas"}, "in")
 
 
 def main():
