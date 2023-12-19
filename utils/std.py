@@ -42,7 +42,7 @@ def test(func: Callable, data, expected):
     if not ans == expected:
         print(f"FAILED in {seconds:0.3f} seconds", file=out_stream, flush=DEBUG)
         print("Expected:", expected, file=out_stream, flush=True)
-        print("Actual:", ans, file=out_stream, flush=True)
+        print("Actual:  ", ans, file=out_stream, flush=True)
         exit(1)
     print(f"Passed in {seconds:0.3f} seconds\n", file=out_stream, flush=DEBUG)
 
