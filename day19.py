@@ -1,6 +1,6 @@
-import copy
 import operator as op
 from collections import defaultdict
+from copy import copy
 from functools import reduce
 
 from utils import benchmark, get_day, test
@@ -85,11 +85,11 @@ def part2(raw: str):
                     if cond == op.gt:
                         val += 1
                     vals = sorted(part[var] + [val])
-                    part1 = copy.deepcopy(part)
-                    part1[var] = vals[:2]
-                    part2 = copy.deepcopy(part)
-                    part2[var] = vals[1:]
-                    return recurse(part1, station) + recurse(part2, station)
+                    left_part = copy(part)
+                    left_part[var] = vals[:2]
+                    right_part = copy(part)
+                    right_part[var] = vals[1:]
+                    return recurse(left_part, station) + recurse(right_part, station)
                 if cond(part[var][0], val) and cond(part[var][1] - 1, val):
                     station = to
                     break
