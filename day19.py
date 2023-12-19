@@ -3,6 +3,8 @@ from collections import defaultdict
 from functools import reduce
 from itertools import product
 
+from tqdm import tqdm
+
 from utils import benchmark, get_day, test, debug_print
 
 test1 = """px{a<2006:qkq,m>2090:A,rfg}
@@ -91,12 +93,12 @@ def part2(raw: str):
                     assert cond == op.gt
                     critical_values[var].add(val+1)
     for k in critical_values.keys():
-        cvs = critical_values[k].add(1)
-        cvs = critical_values[k].add(4001)
+        critical_values[k].add(1)
+        critical_values[k].add(4001)
         critical_values[k] = sorted(critical_values[k])
 
     s = 0
-    for part in make_parts(critical_values): # inclusive, exclusive
+    for part in tqdm(list(make_parts(critical_values))): # inclusive, exclusive
         station = "in"
         while station not in ("A", "R"):
             for var, cond, val, to in rules[station]:
