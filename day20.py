@@ -1,5 +1,6 @@
 from collections import deque
 from itertools import count
+from math import lcm
 
 from utils import benchmark, get_day, test, debug_print
 
@@ -74,14 +75,18 @@ def part1(raw: str):
 
 def part2(raw: str):
     modules = parse(raw)
+    first_activated = {k: 0 for k in "hf nd sb ds".split(" ")}
     for i in count(1):
         if i.bit_count() == 1:
             print(f"on {i}")
         q = deque([("broadcaster", False, "button")])
         while q:
             m_id, pulse, origin = q.popleft()
-            if m_id == "rx" and not pulse:
-                return i
+            if m_id in first_activated and not pulse:
+                if not first_activated[m_id]:
+                    first_activated[m_id] = i
+                if all(first_activated.values()):
+                    return lcm(*first_activated.values())
             if m_id not in modules:
                 continue
             kind, state, outs = modules[m_id]
@@ -140,7 +145,7 @@ expected2 = None
 
 
 def main():
-    # test(part1, test1, expected1)
+    test(part1, test1, expected1)
     test(part1, test11, expected11)
     raw = get_day(20, override=True)
     benchmark(part1, raw)
