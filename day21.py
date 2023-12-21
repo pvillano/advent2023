@@ -1,4 +1,6 @@
 from collections import deque, defaultdict
+from functools import cache
+from itertools import product
 
 import numpy as np
 
@@ -6,6 +8,7 @@ from utils import benchmark, get_day, test, debug_print
 from utils.grids import NEWS_RC
 
 
+@cache
 def parse(raw: str):
     ret = []
     for line in raw.splitlines():
@@ -51,41 +54,100 @@ def part1(raw: str):
     return ((d_origin % 2) == 0).sum()
 
 
+RC_NEWS = {k: v for v, k in enumerate(NEWS_RC)}
+
+
+def step(raw, center: np.ndarray, neighbourhood: list[np.ndarray]) -> np.ndarray:
+    return _step(raw, center.tobytes(), tuple(n.tobytes() for n in neighbourhood))
+
+
+@cache
+def _step(raw, center: bytes, neighbourhood: tuple[bytes]) -> np.ndarray:
+    grid = parse(raw)
+    n_rows, n_cols = len(grid), len(grid[0])
+    center = np.frombuffer(center, dtype=bool).reshape((n_rows, n_cols))
+    neighbourhood = [np.frombuffer(n, dtype=bool).reshape((n_rows, n_cols)) for n in neighbourhood]
+    out = np.zeros_like(center)
+
+    for r, c in product(range(n_rows), range(n_cols)):
+        if grid[r][c] == "#":
+            continue
+        for dr, dc in NEWS_RC:
+            r2, c2 = r + dr, c + dc
+            if grid[r2 % n_rows][c2 % n_cols] == "#":
+                continue
+            if r2 in range(n_rows) and c2 in range(n_cols):
+                neighbour = center[r2, c2]
+            else:
+                if r2 == -1:
+                    r2 = n_rows - 1
+                    from_block = neighbourhood[RC_NEWS[(-1, 0)]]
+                elif r2 == n_rows:
+                    r2 = 0
+                    from_block = neighbourhood[RC_NEWS[(1, 0)]]
+                elif c2 == -1:
+                    c2 = n_cols - 1
+                    from_block = neighbourhood[RC_NEWS[(0, -1)]]
+                elif c2 == n_cols:
+                    c2 = 0
+                    from_block = neighbourhood[RC_NEWS[(0, 1)]]
+                else:
+                    assert False
+                neighbour = from_block[r2, c2]
+            if neighbour:
+                out[r, c] = True
+                break
+    out.setflags(write=False)
+    return out
+
+
 def part2(raw: str):
-    max_steps = 5000 if raw == test1 else 26501365
+    max_steps = 100 if raw == test1 else 26501365
     grid = parse(raw)
     n_rows = len(grid)
     n_cols = len(grid[0])
-    d_origin = np.full((n_rows, n_cols), dtype=int, fill_value=-1)
+    zeros = np.zeros((n_rows, n_cols), dtype=bool)
+    zeros.setflags(write=False)
+    hashlife: defaultdict[tuple[int, int], np.ndarray] = defaultdict(lambda: zeros)
 
-    pred = dict()
-    succ = defaultdict(list)
-
+    initial = np.zeros((n_rows, n_cols), dtype=bool)
     s_r, s_c = find_s(grid)
-    d_origin[s_r, s_c] = 0
-    q = deque([(s_r, s_c, 0)])
-    while q:
-        r, c, steps = q.pop()
+    initial[s_r, s_c] = True
+    initial.setflags(write=False)
+    hashlife[(0, 0)] = initial
+
+    for i in range(1, max_steps + 1):
+        next_hashlife = defaultdict(lambda: zeros)
+
+        for block_r, block_c in explore_me(hashlife.keys()):
+            block = hashlife[(block_r, block_c)]
+            neighbours = []
+            for dr, dc in NEWS_RC:
+                r2, c2 = block_r + dr, block_c + dc
+                neighbours.append(hashlife[(r2, c2)])
+            new_block = step(raw, block, neighbours)
+            if np.any(new_block != zeros):
+                next_hashlife[(block_r, block_c)] = new_block
+        hashlife = next_hashlife
+        if i in [6, 10, 50, 100, 500, 1000, 5000]:
+            alive = sum(v.sum() for v in hashlife.values())
+            debug_print(f"{i=} {len(hashlife)=} {alive=}")
+            # debug_print_grid(hashlife[(0,0)])
+    alive = sum(v.sum() for v in hashlife.values())
+    return alive
+
+
+def explore_me(keys):
+    s = set()
+    for r, c in list(keys):
+        if (r, c) not in s:
+            yield r, c
+            s.add((r, c))
         for dr, dc in NEWS_RC:
-            r2, c2 = (r + dr) % n_rows, (c + dc) % n_cols
-            if grid[r2][c2] == "#":
-                continue
-            if d_origin[r2][c2] != -1:
-                continue
-            d_origin[r2, c2] = d_origin[r, c] + 1
-            pred[(r2, c2)] = (r, c)
-            succ[(r, c)].append((r2, c2))
-            q.appendleft((r2, c2, steps + 1))
-    seen = np.zeros((n_rows, n_cols), dtype=int)
-    seen[s_r, s_c] = 1
-    for i in range(max_steps):
-        next_seen = np.zeros((n_rows, n_cols), dtype=int)
-        for (r2, c2), (r, c) in pred.items():
-            next_seen[r2, c2] += seen[r, c]
-        seen = next_seen
-        if i in [6, 10, 50, 100, 500, 1000]:
-            debug_print(seen.sum())
-    return seen.sum()
+            r2, c2 = r + dr, c + dc
+            if (r2, c2) not in s:
+                yield r2, c2
+                s.add((r2, c2))
 
 
 test1 = """...........
@@ -104,13 +166,13 @@ test1 = """...........
 expected1 = 16
 
 test2 = test1
-expected2 = 16733044
+expected2 = 167004
 
 
 def main():
-    test(part1, test1, expected1)
+    # test(part1, test1, expected1)
     raw = get_day(21, override=True)
-    benchmark(part1, raw)
+    # benchmark(part1, raw)
     test(part2, test2, expected2)
     benchmark(part2, raw)
 
