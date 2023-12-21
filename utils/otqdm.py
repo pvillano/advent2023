@@ -1,6 +1,6 @@
 __all__ = ["otqdm"]
 
-from math import log, exp
+from math import log, exp, inf
 import time
 from collections.abc import Sized, Iterable
 UTF = " " + "".join(map(chr, range(0x258F, 0x2587, -1)))
@@ -10,6 +10,8 @@ def format_interval(ns):
     """[H:]MM:SS"""
     if ns is None:
         return "??:??"
+    if ns == inf:
+        return "forever"
     t = ns / 10 ** 9
     mins, s = divmod(int(t), 60)
     h, m = divmod(mins, 60)
