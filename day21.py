@@ -1,10 +1,10 @@
-from collections import deque, Counter
+from collections import deque, defaultdict
 from functools import cache
 from itertools import product
 
 import numpy as np
 
-from utils import benchmark, get_day, test
+from utils import benchmark, get_day, test, debug_print
 from utils.grids import NEWS_RC
 from utils.otqdm import otqdm
 
@@ -113,31 +113,34 @@ def part2(raw: str):
     zeros = np.zeros((n_rows, n_cols), dtype=bool)
     zeros.setflags(write=False)
     zeros = zeros.tobytes()
-    # hashlife = dict()
-
-    cachelife = Counter()
+    hashlife = dict()
 
     initial = np.zeros((n_rows, n_cols), dtype=bool)
     s_r, s_c = find_s(grid)
     initial[s_r, s_c] = True
     initial.setflags(write=False)
-    cachelife[(initial.tobytes(), tuple([zeros] * 4))] = 1
+    hashlife[(0, 0)] = initial.tobytes()
 
     for i in otqdm(range(1, max_steps + 1)):
-        next_cachelife = Counter()
-        for (block, neighbours), count in cachelife.items():
-            direct_desc = _step(raw, block, neighbours)
-            next_cachelife[direct_desc] += count
-            for n_idx, neighbour in enumerate(neighbours):
-                if neighbour != zeros:
-                    continue
-        cachelife = next_cachelife
+        next_hashlife = dict()
 
+        for block_r, block_c in explore_me(hashlife.keys()):
+            if (block_r, block_c) in next_hashlife:
+                continue
+            block = hashlife.get((block_r, block_c), zeros)
+            neighbours = []
+            for dr, dc in NEWS_RC:
+                r2, c2 = block_r + dr, block_c + dc
+                neighbours.append(hashlife.get((r2, c2), zeros))
+            new_block = _step(raw, block, tuple(neighbours))
+            if new_block != zeros:
+                next_hashlife[(block_r, block_c)] = new_block
+        hashlife = next_hashlife
         # if i in [6, 10, 50, 100, 500, 1000, 5000]:
-        alive = sum(np.frombuffer(v[0], dtype=bool).sum() * cnt for v, cnt in cachelife.items())
-        print(f"{i=} {len(cachelife)=} {alive=} {_step.cache_info()}")
-        # debug_print_grid(hashlife[(0,0)])
-    alive = sum(np.frombuffer(v[0], dtype=bool).sum() * cnt for v, cnt in cachelife.items())
+        alive = sum(np.frombuffer(v, dtype=bool).sum() for v in hashlife.values())
+        print(f"{i=} {len(hashlife)=} {alive=} {_step.cache_info()}")
+            # debug_print_grid(hashlife[(0,0)])
+    alive = sum(v.sum() for v in hashlife.values())
     return alive
 
 
