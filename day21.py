@@ -1,8 +1,6 @@
-from collections import deque
-from itertools import product
+from collections import deque, defaultdict
 
 import numpy as np
-from tqdm import tqdm
 
 from utils import benchmark, get_day, test, debug_print
 from utils.grids import NEWS_RC
@@ -58,27 +56,36 @@ def part2(raw: str):
     grid = parse(raw)
     n_rows = len(grid)
     n_cols = len(grid[0])
-    times_reachable = np.zeros((n_rows, n_cols), dtype=int)
+    d_origin = np.full((n_rows, n_cols), dtype=int, fill_value=-1)
+
+    pred = dict()
+    succ = defaultdict(list)
 
     s_r, s_c = find_s(grid)
-    times_reachable[s_r, s_c] = 1
-    # prevprev = "ass"
-    # prev = "fuck"
-    for i in tqdm(range(max_steps)):
-        # prevprev = prev
-        prev = times_reachable
-        times_reachable = np.zeros(shape=(n_rows, n_cols), dtype=int)
-
-        for r, c, (dr, dc) in product(range(n_rows), range(n_cols), NEWS_RC):
+    d_origin[s_r, s_c] = 0
+    q = deque([(s_r, s_c, 0)])
+    while q:
+        r, c, steps = q.pop()
+        for dr, dc in NEWS_RC:
             r2, c2 = (r + dr) % n_rows, (c + dc) % n_cols
-            if grid[r2][c2] == "#" or grid[r][c] == "#":
+            if grid[r2][c2] == "#":
                 continue
-            if not prev[r, c]:
+            if d_origin[r2][c2] != -1:
                 continue
-            times_reachable[r2, c2] += prev[r, c]
+            d_origin[r2, c2] = d_origin[r, c] + 1
+            pred[(r2, c2)] = (r, c)
+            succ[(r, c)].append((r2, c2))
+            q.appendleft((r2, c2, steps + 1))
+    seen = np.zeros((n_rows, n_cols), dtype=int)
+    seen[s_r, s_c] = 1
+    for i in range(max_steps):
+        next_seen = np.zeros((n_rows, n_cols), dtype=int)
+        for (r2, c2), (r, c) in pred.items():
+            next_seen[r2, c2] += seen[r, c]
+        seen = next_seen
         if i in [6, 10, 50, 100, 500, 1000]:
-            debug_print(f"{i=} {times_reachable.sum()=}")
-    return times_reachable.sum()
+            debug_print(seen.sum())
+    return seen.sum()
 
 
 test1 = """...........
