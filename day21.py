@@ -6,6 +6,7 @@ import numpy as np
 
 from utils import benchmark, get_day, test, debug_print
 from utils.grids import NEWS_RC
+from utils.otqdm import otqdm
 
 
 @cache
@@ -57,12 +58,15 @@ def part1(raw: str):
 RC_NEWS = {k: v for v, k in enumerate(NEWS_RC)}
 
 
-def step(raw, center: np.ndarray, neighbourhood: list[np.ndarray]) -> np.ndarray:
-    return _step(raw, center.tobytes(), tuple(n.tobytes() for n in neighbourhood))
+# def step(raw, center: np.ndarray, neighbourhood: list[np.ndarray]) -> np.ndarray:
+#     grid = parse(raw)
+#     n_rows, n_cols = len(grid), len(grid[0])
+#     x = _step(raw, center.tobytes(), tuple(n.tobytes() for n in neighbourhood))
+#     return np.frombuffer(x, dtype=bool).reshape((n_rows, n_cols))
 
 
 @cache
-def _step(raw, center: bytes, neighbourhood: tuple[bytes]) -> np.ndarray:
+def _step(raw, center: bytes, neighbourhood: tuple[bytes]) -> bytes:
     grid = parse(raw)
     n_rows, n_cols = len(grid), len(grid[0])
     center = np.frombuffer(center, dtype=bool).reshape((n_rows, n_cols))
@@ -98,56 +102,54 @@ def _step(raw, center: bytes, neighbourhood: tuple[bytes]) -> np.ndarray:
                 out[r, c] = True
                 break
     out.setflags(write=False)
-    return out
+    return out.tobytes()
 
 
 def part2(raw: str):
-    max_steps = 100 if raw == test1 else 26501365
+    max_steps = 5000 if raw == test1 else 26501365
     grid = parse(raw)
     n_rows = len(grid)
     n_cols = len(grid[0])
     zeros = np.zeros((n_rows, n_cols), dtype=bool)
     zeros.setflags(write=False)
-    hashlife: defaultdict[tuple[int, int], np.ndarray] = defaultdict(lambda: zeros)
+    zeros = zeros.tobytes()
+    hashlife = dict()
 
     initial = np.zeros((n_rows, n_cols), dtype=bool)
     s_r, s_c = find_s(grid)
     initial[s_r, s_c] = True
     initial.setflags(write=False)
-    hashlife[(0, 0)] = initial
+    hashlife[(0, 0)] = initial.tobytes()
 
-    for i in range(1, max_steps + 1):
-        next_hashlife = defaultdict(lambda: zeros)
+    for i in otqdm(range(1, max_steps + 1)):
+        next_hashlife = dict()
 
         for block_r, block_c in explore_me(hashlife.keys()):
-            block = hashlife[(block_r, block_c)]
+            if (block_r, block_c) in next_hashlife:
+                continue
+            block = hashlife.get((block_r, block_c), zeros)
             neighbours = []
             for dr, dc in NEWS_RC:
                 r2, c2 = block_r + dr, block_c + dc
-                neighbours.append(hashlife[(r2, c2)])
-            new_block = step(raw, block, neighbours)
-            if np.any(new_block != zeros):
+                neighbours.append(hashlife.get((r2, c2), zeros))
+            new_block = _step(raw, block, tuple(neighbours))
+            if new_block != zeros:
                 next_hashlife[(block_r, block_c)] = new_block
         hashlife = next_hashlife
-        if i in [6, 10, 50, 100, 500, 1000, 5000]:
-            alive = sum(v.sum() for v in hashlife.values())
-            debug_print(f"{i=} {len(hashlife)=} {alive=}")
+        # if i in [6, 10, 50, 100, 500, 1000, 5000]:
+        alive = sum(np.frombuffer(v, dtype=bool).sum() for v in hashlife.values())
+        print(f"{i=} {len(hashlife)=} {alive=} {_step.cache_info()}")
             # debug_print_grid(hashlife[(0,0)])
     alive = sum(v.sum() for v in hashlife.values())
     return alive
 
 
 def explore_me(keys):
-    s = set()
-    for r, c in list(keys):
-        if (r, c) not in s:
-            yield r, c
-            s.add((r, c))
+    for r, c in keys:
+        yield r, c
         for dr, dc in NEWS_RC:
             r2, c2 = r + dr, c + dc
-            if (r2, c2) not in s:
-                yield r2, c2
-                s.add((r2, c2))
+            yield r2, c2
 
 
 test1 = """...........
