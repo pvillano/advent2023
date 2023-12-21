@@ -82,7 +82,10 @@ def otqdm(
                 k = elapsed / (base ** n)
                 big_o_str = f"O({base:3.1f}^n)"
                 if len_iterator is not None:
-                    remaining = k * (base ** len_iterator) - elapsed
+                    try:
+                        remaining = k * (base ** len_iterator) - elapsed
+                    except OverflowError:
+                        remaining = inf
             else:
                 big_o_str = "O(?????)"
                 remaining = None
