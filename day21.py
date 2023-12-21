@@ -136,9 +136,9 @@ def part2(raw: str):
             if new_block != zeros:
                 next_hashlife[(block_r, block_c)] = new_block
         hashlife = next_hashlife
-        # if i in [6, 10, 50, 100, 500, 1000, 5000]:
-        alive = sum(np.frombuffer(v, dtype=bool).sum() for v in hashlife.values())
-        print(f"{i=} {len(hashlife)=} {alive=} {_step.cache_info()}")
+        if i in [6, 10, 50, 100, 500, 1000, 5000]:
+            alive = sum(np.frombuffer(v, dtype=bool).sum() for v in hashlife.values())
+            print(f"{i=} {len(hashlife)=} {alive=} {_step.cache_info()}")
             # debug_print_grid(hashlife[(0,0)])
     alive = sum(v.sum() for v in hashlife.values())
     return alive
