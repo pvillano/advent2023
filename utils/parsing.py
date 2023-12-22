@@ -34,6 +34,6 @@ def __int_extractor_regex():
     return re.compile("(-?[0-9]+)")
 
 
-def extract_ints(line: str) -> Iterable[int]:
+def extract_ints(line: str) -> tuple[int, ...]:
     str_list = __int_extractor_regex().findall(line)
     return tuple(map(int, str_list))
