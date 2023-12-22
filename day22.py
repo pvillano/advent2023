@@ -3,9 +3,7 @@ from copy import deepcopy
 
 import numpy as np
 
-from utils import benchmark, get_day, test, debug_print, extract_ints
-
-debug_print
+from utils import benchmark, get_day, test, extract_ints
 
 
 def parse(raw: str):
@@ -89,10 +87,10 @@ def part2(raw: str):
                 supported_by2[child].remove(to_remove)
                 if len(supported_by2[child]) == 0:
                     delq.append(child)
+                    del supported_by2[child]
             del supporting2[to_remove]
-        yote_cnt = len(supporting) - len(supporting2)
-        debug_print(yote_cnt)
-        tote_yote += yote_cnt
+        yeeted = len(supported_by) - len(supported_by2)
+        tote_yote += yeeted
     return tote_yote
 
 
