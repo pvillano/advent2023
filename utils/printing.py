@@ -2,6 +2,7 @@ __all__ = ["debug_print", "debug_print_grid", "debug_print_sparse_grid", "debug_
 
 import inspect
 import sys
+from collections.abc import Iterable
 from itertools import chain
 from typing import Any
 
@@ -86,7 +87,7 @@ def debug_print_sparse_grid(
     """
     if not (DEBUG or override):
         return
-    if isinstance(grid_map, set):
+    if isinstance(grid_map, Iterable):
         grid_map = {k: "#" for k in grid_map}
     x0, x1 = min(k[0] for k in grid_map.keys()), max(k[0] for k in grid_map.keys())
     y0, y1 = min(k[1] for k in grid_map.keys()), max(k[1] for k in grid_map.keys())
