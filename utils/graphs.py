@@ -1,4 +1,4 @@
-__all__ = ["AdjacencyListType", "topological_sort"]
+__all__ = ["AdjacencyListType", "topological_sort", "is_dag"]
 
 from collections.abc import Callable, Hashable
 
@@ -15,7 +15,7 @@ def densify_keys(adj_list: dict[Hashable, list[Hashable]]) -> tuple[list[list[in
     """
     itoa = sorted(adj_list.keys())
     atoi = {val: idx for idx, val in enumerate(itoa)}
-    new_adj_list: AdjacencyListType = {k: [] for k in range(len(itoa))}
+    new_adj_list = [[] for k in range(len(itoa))]
     for key, neighbors in adj_list.items():
         i = atoi[key]
         new_neighbors = list(map(lambda x: atoi[x], neighbors))
@@ -54,3 +54,34 @@ def reverse_edges(adj_list: AdjacencyListType) -> AdjacencyListType:
         for neighbor in neighbors:
             new_adj_list[neighbor].append(node)
     return new_adj_list
+
+
+def is_dag(adj_list: AdjacencyListType) -> bool:
+    a = reverse_edges(adj_list)
+    b = reverse_edges(a)
+    removed_nodes = True
+    while removed_nodes:
+        removed_nodes = False
+        for k, v in tuple(a.items()):
+            if len(v) == 0:
+                del a[k]
+                del b[k]
+                removed_nodes = True
+            elif k not in b:
+                del a[k]
+                removed_nodes = True
+        for k, v in tuple(b.items()):
+            if len(v) == 0:
+                del a[k]
+                del b[k]
+                removed_nodes = True
+            elif k not in a:
+                del b[k]
+                removed_nodes = True
+    assert (len(a) == 0) == (len(b) == 0)
+    return len(a) == 0
+
+
+# assert is_dag({0: [1, 2], 1: [2, 3], 2: [3], 3: []})
+# assert is_dag({0: [1, 2], 1: [2, 3], 2: [3]})
+# assert not is_dag({0: [1, 2], 1: [0]})
