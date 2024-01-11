@@ -108,7 +108,7 @@ def debug_print_sparse_grid(
             for y in range(y0, y1 + 1):
                 if (x, y) in grid_map:
                     print(
-                        str(grid_map[(x, y)]), end="", file=sys.stderr
+                        str(grid_map[(x, y)]).rjust(max_w), end="", file=sys.stderr
                     )
                 else:
                     print("." * max_w, end="", file=sys.stderr)
