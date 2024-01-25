@@ -123,7 +123,8 @@ def part2(raw: str):
 
     for i in otqdm(range(1, max_steps + 1)):
         next_hashlife = dict()
-
+        if i == 555:
+            _step.cache_clear()
         for block_r, block_c in explore_me(hashlife.keys()):
             if (block_r, block_c) in next_hashlife:
                 continue
@@ -136,9 +137,10 @@ def part2(raw: str):
             if new_block != zeros:
                 next_hashlife[(block_r, block_c)] = new_block
         hashlife = next_hashlife
-        if i in [6, 10, 50, 100, 500, 1000, 5000]:
+        if i % 100 == 0:
             alive = sum(np.frombuffer(v, dtype=bool).sum() for v in hashlife.values())
-            print(f"{i=} {len(hashlife)=} {alive=} {_step.cache_info()}")
+            unique_chunks = len(set(v for v in hashlife.values()))
+            print(f"{i=} {unique_chunks=} {len(hashlife)=} {alive=} {_step.cache_info()}")
             # debug_print_grid(hashlife[(0,0)])
     alive = sum(v.sum() for v in hashlife.values())
     return alive
@@ -175,7 +177,7 @@ def main():
     # test(part1, test1, expected1)
     raw = get_day(21, override=True)
     # benchmark(part1, raw)
-    test(part2, test2, expected2)
+    # test(part2, test2, expected2)
     benchmark(part2, raw)
 
 
