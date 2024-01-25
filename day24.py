@@ -42,15 +42,6 @@ def part1(raw: str):
     return s
 
 
-# if (p1x - p2x) * (v2y - v1y) == (p1y - p2y) * (v2x - v1x):
-#     t = (p1x - p2x) / (v2x - v1x)
-#     debug_print(t)
-#     if t < 0:
-#         pass
-#     x = p1x + t * v1x
-#     y = p1y + t * v1y
-#     if xy_min < x < xy_max and xy_min < y < xy_max:
-#         s += 1
 
 def part2(raw: str):
     lines = parse(raw)
