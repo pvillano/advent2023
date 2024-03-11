@@ -63,7 +63,7 @@ def parse2(raw):
         facing = "RDLU"[int(color[-1])]
         ret.append((facing, distance))
     return ret
-a
+
 
 
 def shoelace_area(points):
